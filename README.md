@@ -23,7 +23,9 @@ Aplicación web para gestionar usuarios y roles (Admin, Supervisor y Docente), s
 No se generan cuentas de demostración automáticamente. Si se desean datos de prueba, configurar `SeedData__Enabled=true` y las variables `SEED_ADMIN_PASSWORD`, `SEED_SUPERVISOR_PASSWORD` y `SEED_DOCENTE_PASSWORD` (mínimo 12 caracteres) en un entorno de **Development**. No usar credenciales de ejemplo en producción.
 
 ## Estado y precauciones
-Este repositorio está en proceso de revisión para portafolio. Se identificaron inconsistencias heredadas entre algunas vistas/controladores y servicios, por lo que se recomienda ejecutar una compilación, corregir los errores restantes y probar todos los flujos antes de desplegarlo. La revisión estática no equivale a pruebas funcionales ni a una auditoría de seguridad completa.
+La rama de revisión compila correctamente en .NET 8 mediante GitHub Actions. Las pruebas funcionales con SQL Server, autorización real, registro y restablecimiento de contraseñas aún requieren una base de datos de prueba y no han sido ejecutadas. No se recomienda desplegar a producción sin estas comprobaciones. La compilación no sustituye una auditoría de seguridad.
+
+Validación de compilación: https://github.com/andresarzz/permissions-management-system/actions/workflows/dotnet-build.yml
 
 ## Qué demostrar en una entrevista
 - Diseño de una aplicación MVC conectada a SQL Server
