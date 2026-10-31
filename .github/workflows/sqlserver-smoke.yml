@@ -70,6 +70,13 @@ jobs:
           fi
       - name: Exercise registration, role enforcement, login, requests and reports
         run: python3 tests/sqlserver_smoke.py
+      - name: Diagnose application errors if smoke test fails
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/sistema-permisos-app.log ]; then
+            grep -A 24 -E "fail:|error:|Exception:" /tmp/sistema-permisos-app.log | tail -n 150 | sed -E 's/Password=[^; ]+/Password=[REDACTED]/g' || true
+          fi
       - name: Stop application
         if: always()
         shell: bash
