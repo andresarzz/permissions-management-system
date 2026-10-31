@@ -32,8 +32,4 @@
 		<Folder Include="wwwroot\images\profiles\" />
 	</ItemGroup>
 
-  <!-- Legacy duplicate UsersController lives in SupervisorController.cs and is not a valid supervisor controller. -->
-  <ItemGroup>
-    <Compile Remove="Controllers/SupervisorController.cs" />
-  </ItemGroup>
 </Project>
