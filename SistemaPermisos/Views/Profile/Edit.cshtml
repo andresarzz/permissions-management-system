@@ -80,7 +80,7 @@
                                 <label class="custom-file-label" for="customFile">
                                     @if (!string.IsNullOrEmpty(Model.FotoPerfilActual))
                                     {
-                                        <span>@Path.GetFileName(Model.FotoPerfilActual)</span>
+                                        <span>@System.IO.Path.GetFileName(Model.FotoPerfilActual)</span>
                                     }
                                     else
                                     {
