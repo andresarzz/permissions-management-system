@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   sql-server-smoke:
@@ -71,6 +71,29 @@ jobs:
           fi
       - name: Exercise registration, role enforcement, login, requests and reports
         run: python3 tests/sqlserver_smoke.py
+      - name: Capture real application screenshots
+        shell: bash
+        run: |
+          python3 -m pip install --user playwright
+          python3 -m playwright install chromium --with-deps
+          python3 tests/capture_screenshots.py
+      - name: Upload screenshots as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: permissions-management-screenshots
+          path: docs/screenshots/*.png
+          retention-days: 30
+      - name: Commit genuine screenshots to review branch
+        if: github.ref == 'refs/heads/portfolio-fixes-2026-10-31'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/*.png
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: include screenshots from SQL Server smoke tests"
+            git push origin HEAD:portfolio-fixes-2026-10-31
+          fi
       - name: Diagnose application errors if smoke test fails
         if: failure()
         shell: bash
