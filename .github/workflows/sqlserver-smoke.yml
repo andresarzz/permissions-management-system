@@ -37,6 +37,7 @@ jobs:
       ASPNETCORE_HTTPS_PORT: ""
       ConnectionStrings__DefaultConnection: "Server=127.0.0.1,1433;Database=SistemaPermisosSmoke;User Id=sa;Password=SqlServer-CI-Only-2026!Secure;Encrypt=True;TrustServerCertificate=True"
       SeedData__Enabled: "false"
+      SmokeTests__UseCurrentModelSchema: "true"
       SMOKE_TEST_PASSWORD: "Smoke-User-Password-2026!"
       SMOKE_BASE_URL: "http://127.0.0.1:5050"
     steps:
