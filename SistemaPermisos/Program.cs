@@ -112,43 +112,30 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}"); // Set Login as default route
 
-// Database migration and seeding
+// Ensure the database exists and apply migrations before serving requests.
+// A failed connection must stop startup rather than leave an unusable web app running.
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
     try
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        var logger = services.GetRequiredService<ILogger<Program>>();
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database migrations completed.");
 
-        if (context.Database.CanConnect())
+        // Demo accounts are never created outside an explicitly enabled Development environment.
+        if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SeedData:Enabled"))
         {
-            logger.LogInformation("Conexión a la base de datos establecida correctamente.");
-
-            var pendingMigrations = context.Database.GetPendingMigrations();
-            if (pendingMigrations.Any())
-            {
-                logger.LogInformation("Aplicando migraciones pendientes...");
-                context.Database.Migrate();
-                logger.LogInformation("Migraciones aplicadas correctamente.");
-            }
-
-            // Sample accounts are never seeded automatically or in production.
-            if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SeedData:Enabled"))
-            {
-                await SeedData.Initialize(services);
-            }
-            logger.LogInformation("Datos semilla inicializados correctamente.");
-        }
-        else
-        {
-            logger.LogWarning("No se pudo establecer conexión con la base de datos.");
+            await SeedData.Initialize(services);
+            logger.LogInformation("Development seed data initialized.");
         }
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error durante la inicialización de la base de datos: {Message}", ex.Message);
+        logger.LogCritical(ex, "Database initialization failed. Application startup aborted.");
+        throw;
     }
 }
 
