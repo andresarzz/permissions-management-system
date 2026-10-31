@@ -97,7 +97,7 @@ namespace SistemaPermisos.Data
 
                 foreach (var permName in allPermissions)
                 {
-                    context.UserPermissions.Add(new UserPermission { UsuarioId = adminUser.Id, PermissionName = permName });
+                    // PermissionName entries are global definitions; user roles are stored in Usuario.Rol.
                 }
                 await context.SaveChangesAsync();
 
@@ -132,7 +132,7 @@ namespace SistemaPermisos.Data
                 };
                 foreach (var permName in supervisorPermissions)
                 {
-                    context.UserPermissions.Add(new UserPermission { UsuarioId = supervisorUser.Id, PermissionName = permName });
+                    // PermissionName entries are global definitions; user roles are stored in Usuario.Rol.
                 }
                 await context.SaveChangesAsync();
 
@@ -167,7 +167,7 @@ namespace SistemaPermisos.Data
                 };
                 foreach (var permName in docentePermissions)
                 {
-                    context.UserPermissions.Add(new UserPermission { UsuarioId = docenteUser.Id, PermissionName = permName });
+                    // PermissionName entries are global definitions; user roles are stored in Usuario.Rol.
                 }
                 await context.SaveChangesAsync();
 
