@@ -57,7 +57,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Duraci髇 de la cookie de autenticaci髇
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Duraci贸n de la cookie de autenticaci贸n
         options.SlidingExpiration = true; // Renovar la cookie en cada solicitud
     });
 
@@ -69,7 +69,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DocenteOnly", policy => policy.RequireRole("Docente"));
     options.AddPolicy("AdminOrSupervisor", policy => policy.RequireRole("Admin", "Supervisor"));
 
-    // Pol韙icas basadas en permisos granulares (si se usan UserPermissions)
+    // Pol铆ticas basadas en permisos granulares (si se usan UserPermissions)
     options.AddPolicy("CanManageUsers", policy => policy.RequireClaim("Permission", "ManageUsers"));
     options.AddPolicy("CanManagePermits", policy => policy.RequireClaim("Permission", "ManagePermits"));
     options.AddPolicy("CanManageOmisiones", policy => policy.RequireClaim("Permission", "ManageOmisiones"));
@@ -82,7 +82,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Add Razor Runtime Compilation for development
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+// Razor views are compiled normally; runtime compilation needs an optional extra package.
 
 var app = builder.Build();
 
@@ -123,7 +123,7 @@ using (var scope = app.Services.CreateScope())
 
         if (context.Database.CanConnect())
         {
-            logger.LogInformation("Conexi髇 a la base de datos establecida correctamente.");
+            logger.LogInformation("Conexi贸n a la base de datos establecida correctamente.");
 
             var pendingMigrations = context.Database.GetPendingMigrations();
             if (pendingMigrations.Any())
@@ -133,18 +133,22 @@ using (var scope = app.Services.CreateScope())
                 logger.LogInformation("Migraciones aplicadas correctamente.");
             }
 
-            await SeedData.Initialize(services); // Call SeedData.Initialize without .Wait()
+            // Sample accounts are never seeded automatically or in production.
+            if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SeedData:Enabled"))
+            {
+                await SeedData.Initialize(services);
+            }
             logger.LogInformation("Datos semilla inicializados correctamente.");
         }
         else
         {
-            logger.LogWarning("No se pudo establecer conexi髇 con la base de datos.");
+            logger.LogWarning("No se pudo establecer conexi贸n con la base de datos.");
         }
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error durante la inicializaci髇 de la base de datos: {Message}", ex.Message);
+        logger.LogError(ex, "Error durante la inicializaci贸n de la base de datos: {Message}", ex.Message);
     }
 }
 
