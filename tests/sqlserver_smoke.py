@@ -48,7 +48,7 @@ registration = {
     "Rol": "Admin",  # deliberately forged, must be ignored by the server
 }
 status, url, page = call("/Account/Register", registration)
-check("registration accepted", status == 200 and "/Account/Login" in url,
+check("registration accepted", status == 200 and ("Iniciar Sesión" in page or "Inicie Sesión" in page),
       f"status={status} location={url}")
 
 status, url, page = call("/Account/Login")
