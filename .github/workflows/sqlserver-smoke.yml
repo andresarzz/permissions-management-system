@@ -49,10 +49,10 @@ jobs:
       - name: Start app with fresh SQL Server and verify migrations
         shell: bash
         run: |
-          dotnet run --project SistemaPermisos --no-build --configuration Release > /tmp/sistema-permisos-app.log 2>&1 &
+          dotnet run --no-launch-profile --project SistemaPermisos --no-build --configuration Release > /tmp/sistema-permisos-app.log 2>&1 &
           echo $! > /tmp/sistema-permisos-app.pid
           ready=0
-          for attempt in {1..90}; do
+          for attempt in {1..35}; do
             if curl -fsS --max-time 3 -o /dev/null "http://127.0.0.1:5050/Account/Register"; then
               ready=1
               break
