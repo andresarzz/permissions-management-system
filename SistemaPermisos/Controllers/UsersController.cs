@@ -110,19 +110,6 @@ namespace SistemaPermisos.Controllers
                 return NotFound();
             }
 
-            userToUpdate.Nombre = model.Nombre;
-            userToUpdate.Apellidos = model.Apellidos ?? string.Empty;
-            userToUpdate.NombreUsuario = model.NombreUsuario;
-            // Actualización gestionada por UserService para mantener hash y validaciones.
-            userToUpdate.Rol = model.Rol;
-            userToUpdate.Cedula = model.Cedula;
-            userToUpdate.Puesto = model.Puesto;
-            userToUpdate.Telefono = model.Telefono;
-            userToUpdate.Departamento = model.Departamento;
-            userToUpdate.Direccion = model.Direccion;
-            userToUpdate.FechaNacimiento = model.FechaNacimiento;
-            
-
             var result = await _userService.UpdateUser(model);
             if (result.Success)
             {
