@@ -6,6 +6,8 @@ namespace SistemaPermisos.ViewModels
     {
         public int UserId { get; set; }
 
+        public string UserName { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "El nuevo rol es obligatorio")]
         [Display(Name = "Nuevo Rol")]
         public string NewRole { get; set; } = string.Empty;
