@@ -36,7 +36,7 @@ namespace SistemaPermisos.Controllers
                 ReportesPendientes = await _unitOfWork.ReportesDano.CountAsync(r => r.Estado == "Pendiente"),
                 ReportesResueltos = await _unitOfWork.ReportesDano.CountAsync(r => r.Estado == "Resuelto"),
                 ReportesEnProceso = await _unitOfWork.ReportesDano.CountAsync(r => r.Estado == "En Proceso"),
-                ActividadReciente = (await _unitOfWork.AuditLogs.GetAllAsync()).OrderByDescending(a => a.FechaHora).Take(10).ToList()
+                ActividadReciente = _unitOfWork.AuditLogs.GetAll().OrderByDescending(a => a.FechaHora).Take(10).ToList()
             };
 
             // Eager load related user for audit logs

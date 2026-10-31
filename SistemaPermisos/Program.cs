@@ -39,6 +39,8 @@ builder.Services.AddSession(options =>
 
 // Add HttpContextAccessor for accessing HttpContext in services
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+// Required for IMiddleware-based exception handling.
+builder.Services.AddTransient<ErrorHandlingMiddleware>();
 
 // Register Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -57,7 +59,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Duración de la cookie de autenticación
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // DuraciÃ³n de la cookie de autenticaciÃ³n
         options.SlidingExpiration = true; // Renovar la cookie en cada solicitud
     });
 
@@ -69,7 +71,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("DocenteOnly", policy => policy.RequireRole("Docente"));
     options.AddPolicy("AdminOrSupervisor", policy => policy.RequireRole("Admin", "Supervisor"));
 
-    // Políticas basadas en permisos granulares (si se usan UserPermissions)
+    // PolÃ­ticas basadas en permisos granulares (si se usan UserPermissions)
     options.AddPolicy("CanManageUsers", policy => policy.RequireClaim("Permission", "ManageUsers"));
     options.AddPolicy("CanManagePermits", policy => policy.RequireClaim("Permission", "ManagePermits"));
     options.AddPolicy("CanManageOmisiones", policy => policy.RequireClaim("Permission", "ManageOmisiones"));
@@ -82,7 +84,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Add Razor Runtime Compilation for development
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+// Razor views are compiled normally; runtime compilation needs an optional extra package.
 
 var app = builder.Build();
 
@@ -112,39 +114,40 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}"); // Set Login as default route
 
-// Database migration and seeding
+// Ensure the database exists and apply migrations before serving requests.
+// A failed connection must stop startup rather than leave an unusable web app running.
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
     try
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        var logger = services.GetRequiredService<ILogger<Program>>();
-
-        if (context.Database.CanConnect())
+        if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SmokeTests:UseCurrentModelSchema"))
         {
-            logger.LogInformation("Conexión a la base de datos establecida correctamente.");
-
-            var pendingMigrations = context.Database.GetPendingMigrations();
-            if (pendingMigrations.Any())
-            {
-                logger.LogInformation("Aplicando migraciones pendientes...");
-                context.Database.Migrate();
-                logger.LogInformation("Migraciones aplicadas correctamente.");
-            }
-
-            await SeedData.Initialize(services); // Call SeedData.Initialize without .Wait()
-            logger.LogInformation("Datos semilla inicializados correctamente.");
+            // Integration tests use a disposable database and the current EF model.
+            // This does NOT validate upgrades of databases with historic migrations.
+            await context.Database.EnsureCreatedAsync();
+            logger.LogInformation("Disposable smoke-test database created from the current EF model.");
         }
         else
         {
-            logger.LogWarning("No se pudo establecer conexión con la base de datos.");
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Database migrations completed.");
+        }
+
+        // Demo accounts are never created outside an explicitly enabled Development environment.
+        if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SeedData:Enabled"))
+        {
+            await SeedData.Initialize(services);
+            logger.LogInformation("Development seed data initialized.");
         }
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Error durante la inicialización de la base de datos: {Message}", ex.Message);
+        logger.LogCritical(ex, "Database initialization failed. Application startup aborted.");
+        throw;
     }
 }
 

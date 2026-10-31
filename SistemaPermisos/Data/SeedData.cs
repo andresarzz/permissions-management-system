@@ -48,6 +48,19 @@ namespace SistemaPermisos.Data
                     }
                 }
 
+                // Las cuentas de ejemplo requieren contraseñas explícitas, no predeterminadas.
+                // El programa invoca este método únicamente con SeedData:Enabled en Development.
+                string RequireSeedPassword(string name)
+                {
+                    var password = Environment.GetEnvironmentVariable(name);
+                    if (string.IsNullOrWhiteSpace(password) || password.Length < 12)
+                        throw new InvalidOperationException($"Configure {name} con al menos 12 caracteres antes de crear usuarios de prueba.");
+                    return password;
+                }
+                var adminPassword = RequireSeedPassword("SEED_ADMIN_PASSWORD");
+                var supervisorPassword = RequireSeedPassword("SEED_SUPERVISOR_PASSWORD");
+                var docentePassword = RequireSeedPassword("SEED_DOCENTE_PASSWORD");
+
                 // Create Admin User
                 var adminUser = new Usuario
                 {
@@ -69,7 +82,7 @@ namespace SistemaPermisos.Data
                     UltimoAcceso = DateTime.Now
                 };
                 var passwordHasher = new PasswordHasher<Usuario>();
-                adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, "Admin123!");
+                adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, adminPassword);
                 context.Usuarios.Add(adminUser);
                 await context.SaveChangesAsync(); // Save admin first to get its ID
 
@@ -84,7 +97,7 @@ namespace SistemaPermisos.Data
 
                 foreach (var permName in allPermissions)
                 {
-                    context.UserPermissions.Add(new UserPermission { UsuarioId = adminUser.Id, PermissionName = permName });
+                    // PermissionName entries are global definitions; user roles are stored in Usuario.Rol.
                 }
                 await context.SaveChangesAsync();
 
@@ -108,7 +121,7 @@ namespace SistemaPermisos.Data
                     IsActive = true,
                     UltimoAcceso = DateTime.Now
                 };
-                supervisorUser.PasswordHash = passwordHasher.HashPassword(supervisorUser, "Supervisor123!");
+                supervisorUser.PasswordHash = passwordHasher.HashPassword(supervisorUser, supervisorPassword);
                 context.Usuarios.Add(supervisorUser);
                 await context.SaveChangesAsync(); // Save supervisor to get its ID
 
@@ -119,7 +132,7 @@ namespace SistemaPermisos.Data
                 };
                 foreach (var permName in supervisorPermissions)
                 {
-                    context.UserPermissions.Add(new UserPermission { UsuarioId = supervisorUser.Id, PermissionName = permName });
+                    // PermissionName entries are global definitions; user roles are stored in Usuario.Rol.
                 }
                 await context.SaveChangesAsync();
 
@@ -143,7 +156,7 @@ namespace SistemaPermisos.Data
                     IsActive = true,
                     UltimoAcceso = DateTime.Now
                 };
-                docenteUser.PasswordHash = passwordHasher.HashPassword(docenteUser, "Docente123!");
+                docenteUser.PasswordHash = passwordHasher.HashPassword(docenteUser, docentePassword);
                 context.Usuarios.Add(docenteUser);
                 await context.SaveChangesAsync(); // Save docente to get its ID
 
@@ -154,7 +167,7 @@ namespace SistemaPermisos.Data
                 };
                 foreach (var permName in docentePermissions)
                 {
-                    context.UserPermissions.Add(new UserPermission { UsuarioId = docenteUser.Id, PermissionName = permName });
+                    // PermissionName entries are global definitions; user roles are stored in Usuario.Rol.
                 }
                 await context.SaveChangesAsync();
 

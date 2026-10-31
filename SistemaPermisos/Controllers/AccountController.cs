@@ -111,7 +111,8 @@ namespace SistemaPermisos.Controllers
                     Email = model.Email,
                     Password = model.Password,
                     ConfirmPassword = model.ConfirmPassword,
-                    Rol = model.Rol,
+                    // El registro público nunca permite escoger roles privilegiados.
+                    Rol = "Docente",
                     Cedula = model.Cedula,
                     Puesto = model.Puesto,
                     Telefono = model.Telefono,
