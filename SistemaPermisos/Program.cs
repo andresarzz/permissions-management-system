@@ -124,8 +124,18 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        await context.Database.MigrateAsync();
-        logger.LogInformation("Database migrations completed.");
+        if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SmokeTests:UseCurrentModelSchema"))
+        {
+            // Integration tests use a disposable database and the current EF model.
+            // This does NOT validate upgrades of databases with historic migrations.
+            await context.Database.EnsureCreatedAsync();
+            logger.LogInformation("Disposable smoke-test database created from the current EF model.");
+        }
+        else
+        {
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Database migrations completed.");
+        }
 
         // Demo accounts are never created outside an explicitly enabled Development environment.
         if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SeedData:Enabled"))
