@@ -39,6 +39,8 @@ builder.Services.AddSession(options =>
 
 // Add HttpContextAccessor for accessing HttpContext in services
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+// Required for IMiddleware-based exception handling.
+builder.Services.AddTransient<ErrorHandlingMiddleware>();
 
 // Register Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
