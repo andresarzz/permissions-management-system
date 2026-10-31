@@ -1,0 +1,41 @@
+name: .NET Build Verification
+
+on:
+  push:
+    branches:
+      - portfolio-fixes-2026-10-31
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: dotnet restore SistemaPermisos/SistemaPermisos.csproj
+      - name: Build
+        run: dotnet build SistemaPermisos/SistemaPermisos.csproj --no-restore --configuration Release
+      - name: Test (if test projects exist)
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=( tests/*Tests.csproj tests/*/*Tests.csproj )
+          if (( ${#files[@]} == 0 )); then
+            echo "No test projects found; compilation alone does not validate behavior."
+          else
+            for project in "${files[@]}"; do
+              dotnet test "$project" --configuration Release
+            done
+          fi
