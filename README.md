@@ -14,7 +14,7 @@ Aplicación web para gestionar usuarios y roles (Admin, Supervisor y Docente), s
 
 ## Instalación de desarrollo
 1. Instalar .NET SDK 8 y SQL Server (o LocalDB), y clonar el repositorio.
-2. Abrir `AdminSeguridad.sln`? **No**: la solución de este proyecto es `SistemaPermisos.sln`. Abrirla desde Visual Studio o usar `dotnet restore SistemaPermisos/SistemaPermisos.csproj`.
+2. Abrir `SistemaPermisos.sln` desde Visual Studio, o ejecutar `dotnet restore SistemaPermisos/SistemaPermisos.csproj`.
 3. Configurar `ConnectionStrings:DefaultConnection` para una base de datos local en configuración de desarrollo, preferiblemente mediante variables de entorno o Secret Manager. No subir secretos al repositorio.
 4. Ejecutar `dotnet ef database update --project SistemaPermisos` (requiere herramienta dotnet-ef) o permitir que la aplicación aplique migraciones pendientes con una base accesible.
 5. Ejecutar `dotnet run --project SistemaPermisos`.
